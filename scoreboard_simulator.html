@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scoreboard Simulator - CMP 1059</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'JetBrains Mono',monospace;background:linear-gradient(145deg,#0a0e1a,#111827,#0d1320);color:#e2e8f0;min-height:100vh;padding:20px}
+  h1{font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;background:linear-gradient(135deg,#60a5fa,#a78bfa,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;margin-bottom:4px}
+  .sub{text-align:center;color:#64748b;font-size:12px;margin-bottom:20px}
+  .ctrl{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+  .btn{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);border-radius:6px;padding:8px 16px;color:#94a3b8;font-size:13px;font-family:'JetBrains Mono',monospace;cursor:pointer;transition:.15s}
+  .btn:hover{background:rgba(255,255,255,.1);color:#e2e8f0}
+  .btn:disabled{opacity:.3;cursor:default}
+  .bp{background:rgba(34,197,94,.2);border-color:#22c55e;color:#22c55e;min-width:110px}
+  .bs{background:rgba(239,68,68,.2);border-color:#ef4444;color:#ef4444;min-width:110px}
+  .badge{display:inline-block;background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.3);border-radius:8px;padding:6px 24px;font-size:18px;font-weight:600;color:#60a5fa}
+  .badge.on{animation:pulse 1s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+  @keyframes sl{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+  .cc{text-align:center;margin-bottom:16px}
+  .si{margin-left:12px;font-size:12px;color:#64748b}
+  .eb{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:10px 14px;margin:0 auto 16px;max-width:800px}
+  .et{font-size:10px;color:#64748b;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px}
+  .er{display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:4px;margin-bottom:2px;animation:sl .3s ease both}
+  .ed{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .ex{font-size:12px;color:#cbd5e1}
+  .st{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;color:#94a3b8;margin-bottom:8px}
+  .tc{margin-bottom:20px;overflow-x:auto}
+  table{width:100%;border-collapse:collapse;background:rgba(255,255,255,.02);border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,.08)}
+  th{padding:8px 10px;background:rgba(255,255,255,.06);color:#94a3b8;font-size:11px;font-weight:600;text-transform:uppercase;text-align:center;border-bottom:1px solid rgba(255,255,255,.08)}
+  th.l{text-align:left}
+  td{padding:7px 10px;text-align:center;font-size:13px;color:#cbd5e1;border-bottom:1px solid rgba(255,255,255,.04)}
+  td.l{text-align:left;font-weight:500;color:#e2e8f0}
+  .hi{background:rgba(34,197,94,.2);color:#4ade80!important}
+  .hr{background:rgba(59,130,246,.2);color:#60a5fa!important}
+  .he{background:rgba(6,182,212,.2);color:#22d3ee!important}
+  .hw{background:rgba(16,185,129,.2);color:#34d399!important}
+  .leg{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;padding:12px 16px;background:rgba(255,255,255,.02);border-radius:8px;border:1px solid rgba(255,255,255,.06);margin-bottom:16px}
+  .li{display:flex;align-items:center;gap:5px}
+  .ld{width:10px;height:10px;border-radius:50%}
+  .ll{font-size:11px;color:#94a3b8}
+  .foot{text-align:center;margin-top:16px;font-size:11px;color:#475569}
+  .xb{background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.2);border-radius:8px;padding:12px 16px;margin:0 auto 20px;max-width:800px}
+  .xt{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;color:#34d399;margin-bottom:8px}
+  .xtb{width:100%;font-size:12px}
+  .xtb td{padding:3px 8px;border:none;color:#94a3b8}
+  .xtb td:first-child{color:#e2e8f0;text-align:left}
+</style>
+</head>
+<body>
+<h1>&#9889; Scoreboard Simulator</h1>
+<p class="sub">CDC 6600 Dynamic Scheduling &mdash; Resultado Real do Simulador de Koren</p>
+
+<div class="ctrl">
+  <button class="btn" onclick="doReset()">&#9198; In&iacute;cio</button>
+  <button class="btn" id="bp" onclick="doPrev()">&#9664; Anterior</button>
+  <button class="btn bp" id="pp" onclick="togglePlay()">&#9654; Play</button>
+  <button class="btn" id="bn" onclick="doNext()">Pr&oacute;ximo &#9654;</button>
+  <button class="btn" onclick="doEnd()">Final &#9197;</button>
+  <div style="display:flex;align-items:center;gap:6px;margin-left:8px">
+    <span style="font-size:11px;color:#64748b">Vel:</span>
+    <input type="range" min="100" max="2000" step="100" value="600" id="sp" oninput="usp()" style="width:80px;accent-color:#60a5fa">
+    <span style="font-size:11px;color:#94a3b8" id="sv">600ms</span>
+  </div>
+</div>
+
+<div class="cc">
+  <span class="badge" id="cb">Ciclo 0</span>
+  <span class="si" id="si"></span>
+</div>
+
+<div id="ebox" class="eb" style="display:none">
+  <div class="et" id="etit"></div>
+  <div id="econ"></div>
+</div>
+
+<div class="xb">
+  <div class="xt">&#10004; Valores Reais do Simulador de Koren (Clock Cycle 67)</div>
+  <table class="xtb">
+    <tr><td>LD F6, 34+R2</td><td>Issue:1</td><td>Read:2</td><td>Exec:3</td><td>Write:4</td></tr>
+    <tr><td>LD F2, 45+R3</td><td>Issue:5</td><td>Read:6</td><td>Exec:7</td><td>Write:8</td></tr>
+    <tr><td>MULTD F0, F2, F4</td><td>Issue:9</td><td>Read:10</td><td>Exec:20</td><td>Write:21</td></tr>
+    <tr><td>SUBD F8, F6, F2</td><td>Issue:10</td><td>Read:22</td><td>Exec:24</td><td>Write:25</td></tr>
+    <tr><td>DIVD F10, F0, F6</td><td>Issue:11</td><td>Read:26</td><td>Exec:66</td><td>Write:67</td></tr>
+    <tr><td>ADDD F6, F8, F2</td><td>Issue:26</td><td>Read:27</td><td>Exec:29</td><td>Write:30</td></tr>
+  </table>
+</div>
+
+<div class="tc">
+  <div class="st">&#128203; Instruction Status</div>
+  <table><thead><tr>
+    <th class="l" style="min-width:200px">Instru&ccedil;&atilde;o</th>
+    <th>Issue</th><th>Read Op</th><th>Exec Complete</th><th>Write Result</th>
+  </tr></thead><tbody id="it"></tbody></table>
+</div>
+
+<div class="tc">
+  <div class="st">&#9881; Functional Unit Status</div>
+  <table><thead><tr>
+    <th class="l">Unit</th><th>Busy</th><th>Op</th><th>Fi</th>
+    <th>Fj</th><th>Fk</th><th>Qj</th><th>Qk</th><th>Rj</th><th>Rk</th>
+  </tr></thead><tbody id="ft"></tbody></table>
+</div>
+
+<div class="tc">
+  <div class="st">&#128221; Register Result Status</div>
+  <table><thead><tr id="rh"></tr></thead><tbody><tr id="rr"></tr></tbody></table>
+</div>
+
+<div class="leg">
+  <div class="li"><span class="ld" style="background:#ef4444"></span><span class="ll">RAW</span></div>
+  <div class="li"><span class="ld" style="background:#f59e0b"></span><span class="ll">WAR</span></div>
+  <div class="li"><span class="ld" style="background:#8b5cf6"></span><span class="ll">WAW</span></div>
+  <div class="li"><span class="ld" style="background:#ec4899"></span><span class="ll">Structural</span></div>
+  <div class="li"><span class="ld" style="background:#22c55e"></span><span class="ll">Issue</span></div>
+  <div class="li"><span class="ld" style="background:#3b82f6"></span><span class="ll">Read Ops</span></div>
+  <div class="li"><span class="ld" style="background:#06b6d4"></span><span class="ll">Exec Complete</span></div>
+  <div class="li"><span class="ld" style="background:#10b981"></span><span class="ll">Write Result</span></div>
+</div>
+
+<div class="foot">
+  LD F6,34+R2 | LD F2,45+R3 | MULTD F0,F2,F4 | SUBD F8,F6,F2 | DIVD F10,F0,F6 | ADDD F6,F8,F2<br>
+  Integer=1 | FP Add=2 | FP Multiply=10 | FP Divide=40
+</div>
+
+<script>
+// Hard-coded timeline matching the ACTUAL Koren simulator output
+var LABELS=["LD F6, 34+R2","LD F2, 45+R3","MULTD F0, F2, F4","SUBD F8, F6, F2","DIVD F10, F0, F6","ADDD F6, F8, F2"];
+var ISSUE= [1, 5, 9,10,11,26];
+var READOP=[2, 6,10,22,26,27];
+var EXEC=  [3, 7,20,24,66,29];
+var WRITE= [4, 8,21,25,67,30];
+
+var DESTS=["F6","F2","F0","F8","F10","F6"];
+var SRC1= [null,null,"F2","F6","F0","F8"];
+var SRC2= [null,null,"F4","F2","F6","F2"];
+var FUTYPES=["integer","integer","mult1","add","divide","add"];
+
+var FU_NAMES=["integer","mult1","mult2","add","divide"];
+var REGS=[];for(var i=0;i<=30;i+=2)REGS.push("F"+i);
+
+// Build events timeline
+function buildTimeline(){
+  var events={};
+  function add(c,e){if(!events[c])events[c]=[];events[c].push(e);}
+
+  // Structural: LD F2 waits cycles 2-4
+  for(var sc=2;sc<=4;sc++) add(sc,"Structural: LD F2, 45+R3 espera unidade integer");
+
+  // Issues
+  add(1,"Issue: LD F6, 34+R2 \u2192 integer");
+  add(5,"Issue: LD F2, 45+R3 \u2192 integer");
+  // MULTD can't issue cycles 6-8 (integer busy blocks in-order issue)
+  for(var mc=6;mc<=8;mc++) add(mc,"Structural: MULTD F0, F2, F4 espera in-order issue");
+  add(9,"Issue: MULTD F0, F2, F4 \u2192 mult1");
+  add(10,"Issue: SUBD F8, F6, F2 \u2192 add");
+  add(11,"Issue: DIVD F10, F0, F6 \u2192 divide");
+  // ADDD can't issue until add unit free (SUBD finishes write at 25) AND no WAW on F6
+  for(var ac=12;ac<=25;ac++) add(ac,"Structural: ADDD F6, F8, F2 espera unidade add");
+  add(26,"Issue: ADDD F6, F8, F2 \u2192 add");
+
+  // Read Operands
+  add(2,"Read Operands: LD F6, 34+R2");
+  add(6,"Read Operands: LD F2, 45+R3");
+  add(10,"Read Operands: MULTD F0, F2, F4");
+  // SUBD RAW waits for F2 (written cycle 8) but also waits until cycle 22
+  for(var sr=11;sr<=21;sr++) add(sr,"RAW: SUBD F8, F6, F2 espera operandos");
+  add(22,"Read Operands: SUBD F8, F6, F2");
+  // DIVD RAW waits for F0 (written cycle 21)
+  for(var dr=12;dr<=25;dr++){
+    if(dr<=21) add(dr,"RAW: DIVD F10, F0, F6 espera F0");
+  }
+  add(26,"Read Operands: DIVD F10, F0, F6");
+  add(27,"Read Operands: ADDD F6, F8, F2");
+
+  // Exec Complete
+  add(3,"Exec Complete: LD F6, 34+R2");
+  add(7,"Exec Complete: LD F2, 45+R3");
+  add(20,"Exec Complete: MULTD F0, F2, F4");
+  add(24,"Exec Complete: SUBD F8, F6, F2");
+  add(29,"Exec Complete: ADDD F6, F8, F2");
+  add(66,"Exec Complete: DIVD F10, F0, F6");
+
+  // Write Result
+  add(4,"Write Result: LD F6, 34+R2 \u2192 F6");
+  add(8,"Write Result: LD F2, 45+R3 \u2192 F2");
+  add(21,"Write Result: MULTD F0, F2, F4 \u2192 F0");
+  add(25,"Write Result: SUBD F8, F6, F2 \u2192 F8");
+  add(30,"Write Result: ADDD F6, F8, F2 \u2192 F6");
+  add(67,"Write Result: DIVD F10, F0, F6 \u2192 F10");
+
+  return events;
+}
+
+var evTimeline=buildTimeline();
+
+// Build snapshots for each cycle
+function buildSnapshots(){
+  var snaps=[];
+  for(var cy=1;cy<=67;cy++){
+    var evts=evTimeline[cy]||[];
+    // Filter to show only key events (not repeated stalls for every cycle)
+    var keyEvts=[];
+    var seen={};
+    evts.forEach(function(e){
+      // Show stall/RAW only on first and last occurrence
+      var base=e.replace(/\d+/g,"");
+      if(!seen[base]){seen[base]=true;keyEvts.push(e);}
+    });
+
+    // Build FU status for this cycle
+    var fus={};
+    FU_NAMES.forEach(function(f){fus[f]={busy:false,op:"",fi:"",fj:"",fk:"",qj:"",qk:"",rj:false,rk:false};});
+    for(var ii=0;ii<6;ii++){
+      if(ISSUE[ii]<=cy && WRITE[ii]>cy){
+        var fn=FUTYPES[ii];
+        fus[fn]={busy:true,op:["LD","LD","MULTD","SUBD","DIVD","ADDD"][ii],fi:DESTS[ii],
+          fj:SRC1[ii]||"",fk:SRC2[ii]||"",
+          qj:(SRC1[ii]&&READOP[ii]>cy)?"waiting":"",
+          qk:(SRC2[ii]&&READOP[ii]>cy)?"waiting":"",
+          rj:!(SRC1[ii]&&READOP[ii]>cy),
+          rk:!(SRC2[ii]&&READOP[ii]>cy)};
+      }
+    }
+
+    // Register result status
+    var regs={};
+    REGS.forEach(function(r){regs[r]="";});
+    for(var ri=0;ri<6;ri++){
+      if(ISSUE[ri]<=cy && WRITE[ri]>cy){
+        regs[DESTS[ri]]=FUTYPES[ri];
+      }
+    }
+
+    if(evts.length>0){
+      snaps.push({cycle:cy,events:keyEvts,fus:fus,regs:regs});
+    }
+  }
+  // Final state
+  var finalFus={};FU_NAMES.forEach(function(f){finalFus[f]={busy:false,op:"",fi:"",fj:"",fk:"",qj:"",qk:"",rj:false,rk:false};});
+  var finalRegs={};REGS.forEach(function(r){finalRegs[r]="";});
+  snaps.push({cycle:67,events:["Write Result: DIVD F10, F0, F6 \u2192 F10","Execu\u00e7\u00e3o completa! Todos os hazards resolvidos."],fus:finalFus,regs:finalRegs});
+  return snaps;
+}
+
+var steps=buildSnapshots();
+var cur=0,playing=false,timer=null,speed=600;
+
+(function(){var rh=document.getElementById("rh");REGS.forEach(function(r){var th=document.createElement("th");th.style.cssText="font-size:11px;padding:6px 4px";th.textContent=r;rh.appendChild(th);});})();
+
+function ec(e){
+  if(e.indexOf("RAW")>=0)return"#ef4444";if(e.indexOf("WAR")>=0)return"#f59e0b";
+  if(e.indexOf("WAW")>=0)return"#8b5cf6";if(e.indexOf("Structural")>=0||e.indexOf("espera")>=0)return"#ec4899";
+  if(e.indexOf("Issue")>=0)return"#22c55e";if(e.indexOf("Read")>=0)return"#3b82f6";
+  if(e.indexOf("Exec")>=0)return"#06b6d4";if(e.indexOf("Write")>=0||e.indexOf("completa")>=0)return"#10b981";
+  return"#94a3b8";
+}
+function ebg(e){
+  if(e.indexOf("RAW")>=0)return"rgba(239,68,68,.12)";if(e.indexOf("WAR")>=0)return"rgba(245,158,11,.12)";
+  if(e.indexOf("Structural")>=0||e.indexOf("espera")>=0)return"rgba(236,72,153,.12)";
+  return"rgba(255,255,255,.04)";
+}
+
+function render(){
+  var s=steps[cur];if(!s)return;
+  var cy=s.cycle;
+  document.getElementById("cb").textContent="Ciclo "+cy;
+  document.getElementById("cb").className="badge"+(playing?" on":"");
+  document.getElementById("si").textContent="(passo "+(cur+1)+"/"+steps.length+")";
+
+  var eb=document.getElementById("ebox"),econ=document.getElementById("econ");
+  if(s.events.length>0){
+    eb.style.display="block";
+    document.getElementById("etit").textContent="Eventos do Ciclo "+cy;
+    econ.innerHTML="";
+    s.events.forEach(function(ev,i){
+      var r=document.createElement("div");r.className="er";r.style.background=ebg(ev);r.style.animationDelay=(i*50)+"ms";
+      var d=document.createElement("span");d.className="ed";d.style.background=ec(ev);d.style.boxShadow="0 0 6px "+ec(ev)+"40";
+      var t=document.createElement("span");t.className="ex";t.textContent=ev;
+      r.appendChild(d);r.appendChild(t);econ.appendChild(r);
+    });
+  } else eb.style.display="none";
+
+  // Instruction table
+  var it=document.getElementById("it");it.innerHTML="";
+  for(var i=0;i<6;i++){
+    var tr=document.createElement("tr");
+    var td0=document.createElement("td");td0.className="l";td0.textContent=LABELS[i];tr.appendChild(td0);
+    var vals=[
+      {v:ISSUE[i]<=cy?ISSUE[i]:0,c:"hi",t:ISSUE[i]},
+      {v:READOP[i]<=cy?READOP[i]:0,c:"hr",t:READOP[i]},
+      {v:EXEC[i]<=cy?EXEC[i]:0,c:"he",t:EXEC[i]},
+      {v:WRITE[i]<=cy?WRITE[i]:0,c:"hw",t:WRITE[i]}
+    ];
+    vals.forEach(function(p){
+      var td=document.createElement("td");
+      td.textContent=p.v||"\u2014";
+      if(p.t===cy&&p.v>0)td.className=p.c;
+      tr.appendChild(td);
+    });
+    it.appendChild(tr);
+  }
+
+  // FU table
+  var ft=document.getElementById("ft");ft.innerHTML="";
+  FU_NAMES.forEach(function(fn){
+    var fu=s.fus[fn];var tr=document.createElement("tr");
+    var tn=document.createElement("td");tn.className="l";tn.style.color=fu.busy?"#fbbf24":"#64748b";tn.textContent=fn;tr.appendChild(tn);
+    var tb=document.createElement("td");tb.style.color=fu.busy?"#ef4444":"#22c55e";tb.textContent=fu.busy?"Yes":"No";tr.appendChild(tb);
+    ["op","fi","fj","fk"].forEach(function(k){var td=document.createElement("td");td.textContent=fu[k]||"\u2014";tr.appendChild(td);});
+    var tqj=document.createElement("td");tqj.textContent=fu.qj||"\u2014";tqj.style.color=fu.qj?"#f59e0b":"#64748b";tr.appendChild(tqj);
+    var tqk=document.createElement("td");tqk.textContent=fu.qk||"\u2014";tqk.style.color=fu.qk?"#f59e0b":"#64748b";tr.appendChild(tqk);
+    var trj=document.createElement("td");trj.style.color=fu.busy?(fu.rj?"#22c55e":"#ef4444"):"";trj.textContent=fu.busy?(fu.rj?"Yes":"No"):"\u2014";tr.appendChild(trj);
+    var trk=document.createElement("td");trk.style.color=fu.busy?(fu.rk?"#22c55e":"#ef4444"):"";trk.textContent=fu.busy?(fu.rk?"Yes":"No"):"\u2014";tr.appendChild(trk);
+    ft.appendChild(tr);
+  });
+
+  // Reg table
+  var rr=document.getElementById("rr");rr.innerHTML="";
+  REGS.forEach(function(r){
+    var td=document.createElement("td");td.style.cssText="font-size:11px;padding:6px 4px";
+    var v=s.regs[r];td.textContent=v||"\u2014";td.style.color=v?"#fbbf24":"#334155";td.style.fontWeight=v?"600":"400";
+    rr.appendChild(td);
+  });
+
+  document.getElementById("bp").disabled=(cur===0);
+  document.getElementById("bn").disabled=(cur>=steps.length-1);
+  var pp=document.getElementById("pp");
+  pp.className=playing?"btn bs":"btn bp";
+  pp.textContent=playing?"\u23F8 Pausar":"\u25B6 Play";
+}
+
+function doNext(){if(cur<steps.length-1){cur++;render();}}
+function doPrev(){if(cur>0){cur--;render();}}
+function doReset(){cur=0;playing=false;if(timer)clearTimeout(timer);render();}
+function doEnd(){cur=steps.length-1;playing=false;if(timer)clearTimeout(timer);render();}
+function togglePlay(){playing=!playing;if(playing)pl();else if(timer)clearTimeout(timer);render();}
+function pl(){if(!playing||cur>=steps.length-1){playing=false;render();return;}cur++;render();timer=setTimeout(pl,speed);}
+function usp(){speed=parseInt(document.getElementById("sp").value);document.getElementById("sv").textContent=speed+"ms";}
+
+render();
+</script>
+</body>
+</html>
