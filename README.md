@@ -1,12 +1,12 @@
-# ⚡ Scoreboard Simulator
+# Scoreboard Simulator
 
-Interactive simulator of the **CDC 6600 Scoreboard** dynamic scheduling algorithm. Visualizes cycle-by-cycle instruction execution, hazard detection and resolution in real time.
+An interactive visualization of the CDC 6600 Scoreboard dynamic-scheduling algorithm, including cycle-by-cycle execution and data-hazard detection.
 
-## About
+## Project Overview
 
-This project was developed for the **Computer Architecture** course (CMP 1059). It simulates the classic Scoreboard algorithm used in the CDC 6600 supercomputer for dynamic instruction scheduling, as described by Hennessy & Patterson.
+This project was developed for the Computer Architecture course (CMP 1059). It demonstrates the classic Scoreboard algorithm used in the CDC 6600 for dynamic instruction scheduling, following the concepts presented by Hennessy and Patterson.
 
-The simulation matches the actual output of the [Koren Simulator](http://www.ecs.umass.edu/ece/koren/architecture/scoreboard/) (Clock Cycle 67).
+For the included instruction sequence and configuration, the simulator reproduces the 67-cycle execution recorded with the [Koren Scoreboard Simulator](http://www.ecs.umass.edu/ece/koren/architecture/scoreboard/).
 
 ## Features
 
@@ -23,7 +23,7 @@ The simulation matches the actual output of the [Koren Simulator](http://www.ecs
 
 ## Instruction Set
 
-```
+```text
 LD F6, 34+R2
 LD F2, 45+R3
 MULTD F0, F2, F4
@@ -62,11 +62,18 @@ ADDD F6, F8, F2
 | WAR | Write Result | ADDD waits for DIVD to read F6 |
 | Structural | Issue | LD F2 waits for Integer unit (4 cycles) |
 
-## How to Run
+## Running Locally
 
-Just open `scoreboard_simulator.html` in any browser. No dependencies, no build step, no server needed.
+Clone the repository and open `scoreboard_simulator.html` in a modern browser:
 
-## Tech
+```bash
+git clone https://github.com/uzoom333/scoreboard-simulator.git
+cd scoreboard-simulator
+```
+
+No package installation, build step, or local server is required.
+
+## Technologies
 
 - HTML / CSS / JavaScript (vanilla, single file)
 - No external dependencies
@@ -79,8 +86,8 @@ Just open `scoreboard_simulator.html` in any browser. No dependencies, no build 
 
 ## Documentation
 
-The full technical report is available in `docs/relatorio_trabalho2.docx`.
+Read the [technical report](docs/REPORT.md) or download the original course document from [`docs/relatorio_trabalho2.docx`](docs/relatorio_trabalho2.docx).
 
----
+## Author
 
-*CMP 1059 — Computer Architecture | Built with the help of Claude Opus 4.6*
+Renato Morais Mundim Filho
